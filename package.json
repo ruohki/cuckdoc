@@ -1,0 +1,11 @@
+{
+  "name": "cuckdoc",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Paste markdown, press one button, get Word-ready rich text on your clipboard.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "preview": "node build.mjs && cd dist && python3 -m http.server 8080"
+  }
+}

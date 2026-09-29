@@ -1,0 +1,1064 @@
+<title>Cuckdoc</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+
+<style>
+  :root{
+    --ground:#EEF0F4;
+    --ground-2:#E3E8EF;
+    --panel:#FFFFFF;
+    --sheet:#FFFFFF;
+    --ink:#131822;
+    --ink-2:#414B5A;
+    --muted:#6C7787;
+    --rule:#D3DAE4;
+    --rule-soft:#E5E9F0;
+    --accent:#2D5BD7;
+    --accent-ink:#FFFFFF;
+    --accent-hover:#2349B4;
+    --accent-soft:#E2EAFB;
+    --ok:#0F7A4A;
+    --warn:#9A5B10;
+    --editor-bg:#121821;
+    --editor-ink:#DDE4ED;
+    --editor-muted:#7C8A9C;
+    --editor-rule:#202B38;
+    --editor-caret:#7FA8FF;
+    --shadow:0 1px 2px rgba(19,24,34,.08), 0 14px 34px -14px rgba(19,24,34,.30);
+    --shadow-sheet:0 1px 1px rgba(19,24,34,.10), 0 18px 44px -20px rgba(19,24,34,.45);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#0C1117;
+      --ground-2:#101822;
+      --panel:#141C26;
+      --sheet:#F1F1ED;
+      --ink:#E6ECF4;
+      --ink-2:#B4C0CE;
+      --muted:#8A97A7;
+      --rule:#25303D;
+      --rule-soft:#1C242F;
+      --accent:#6E97F5;
+      --accent-ink:#0A1120;
+      --accent-hover:#88AAFA;
+      --accent-soft:#1A2740;
+      --ok:#4CC98B;
+      --warn:#E0A75A;
+      --editor-bg:#080D14;
+      --editor-ink:#DDE4ED;
+      --editor-muted:#6E7C8E;
+      --editor-rule:#18212C;
+      --shadow:0 1px 2px rgba(0,0,0,.55), 0 18px 40px -18px rgba(0,0,0,.8);
+      --shadow-sheet:0 1px 2px rgba(0,0,0,.6), 0 22px 50px -22px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0C1117;
+    --ground-2:#101822;
+    --panel:#141C26;
+    --sheet:#F1F1ED;
+    --ink:#E6ECF4;
+    --ink-2:#B4C0CE;
+    --muted:#8A97A7;
+    --rule:#25303D;
+    --rule-soft:#1C242F;
+    --accent:#6E97F5;
+    --accent-ink:#0A1120;
+    --accent-hover:#88AAFA;
+    --accent-soft:#1A2740;
+    --ok:#4CC98B;
+    --warn:#E0A75A;
+    --editor-bg:#080D14;
+    --editor-ink:#DDE4ED;
+    --editor-muted:#6E7C8E;
+    --editor-rule:#18212C;
+    --shadow:0 1px 2px rgba(0,0,0,.55), 0 18px 40px -18px rgba(0,0,0,.8);
+    --shadow-sheet:0 1px 2px rgba(0,0,0,.6), 0 22px 50px -22px rgba(0,0,0,.9);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground);
+    color:var(--ink);
+    font-family:Archivo,"Helvetica Neue",Arial,sans-serif;
+    font-size:14px;
+    -webkit-font-smoothing:antialiased;
+  }
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+  .app{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    padding-inline:16px;
+    padding-block:14px 16px;
+    /* A definite height, not min-height: flex:1 on .panes can only distribute
+       free space when there is a definite amount of it to distribute. With an
+       auto height the panes size to the whole document inside the sheet and the
+       window scrolls instead of the preview. */
+    height:100dvh;
+  }
+
+  /* ---------- top bar ---------- */
+  .bar{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:16px 20px;
+    padding-bottom:12px;
+    border-bottom:1px solid var(--rule);
+  }
+  .brand{display:flex;align-items:center;gap:11px;margin-right:auto}
+  .mark{
+    display:grid;place-items:center;
+    width:34px;height:34px;flex:none;
+    border-radius:8px;
+    background:var(--accent);
+    color:var(--accent-ink);
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:13px;font-weight:500;letter-spacing:-.02em;
+  }
+  .brand h1{
+    margin:0;
+    font-size:19px;font-weight:700;letter-spacing:-.015em;line-height:1.1;
+  }
+  .brand p{
+    margin:2px 0 0;
+    font-size:12.5px;color:var(--muted);line-height:1.2;
+  }
+
+  .controls{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+  .ctl{display:flex;flex-direction:column;gap:4px}
+  .ctl > span{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:9.5px;text-transform:uppercase;letter-spacing:.11em;
+    color:var(--muted);padding-left:1px;
+  }
+  select{
+    font-family:inherit;font-size:13px;color:var(--ink);
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:7px;
+    padding:7px 9px;
+    min-height:34px;
+  }
+
+  .btn{
+    font-family:inherit;font-size:13px;font-weight:500;
+    color:var(--ink-2);
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:7px;
+    padding:8px 12px;
+    cursor:pointer;
+    transition:background .12s ease, color .12s ease, border-color .12s ease;
+  }
+  .btn:hover{color:var(--ink);border-color:var(--muted)}
+  .btn.primary{
+    display:inline-flex;align-items:center;gap:9px;
+    background:var(--accent);
+    border-color:var(--accent);
+    color:var(--accent-ink);
+    font-weight:600;font-size:14px;
+    padding:9px 16px;
+    min-height:38px;
+  }
+  .btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:var(--accent-ink)}
+  .btn.primary[data-state="done"]{background:var(--ok);border-color:var(--ok);color:#fff}
+  .btn.primary kbd{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11px;font-weight:400;
+    background:rgba(255,255,255,.18);
+    border-radius:4px;
+    padding:2px 5px;
+    line-height:1;
+  }
+  :root[data-theme="dark"] .btn.primary kbd{background:rgba(0,0,0,.18)}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary kbd{background:rgba(0,0,0,.18)}}
+
+  /* ---------- panes ---------- */
+  .panes{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1.08fr);
+    /* minmax(0,1fr), not the default auto row: an auto row takes its height from
+       the full document inside the sheet, which pushes the app past the viewport
+       instead of letting each pane scroll on its own. */
+    grid-template-rows:minmax(0,1fr);
+    gap:12px;
+    flex:1;
+    min-height:0;
+  }
+  .pane{
+    display:flex;flex-direction:column;
+    min-height:0;min-width:0;
+    border-radius:11px;
+    overflow:hidden;
+    border:1px solid var(--rule);
+    box-shadow:var(--shadow);
+  }
+  .pane-head{
+    display:flex;align-items:center;gap:10px;
+    padding:8px 10px 8px 13px;
+    flex:none;
+  }
+  .pane-head h2{
+    margin:0;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:10px;font-weight:500;
+    text-transform:uppercase;letter-spacing:.13em;
+  }
+  .pane-head .meta{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .pane-head .note{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:10.5px;letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .mini{
+    font-family:inherit;font-size:12px;
+    background:none;border:1px solid transparent;border-radius:6px;
+    padding:4px 8px;cursor:pointer;
+    transition:background .12s ease,border-color .12s ease,color .12s ease;
+  }
+
+  /* editor: raw source, dark in both themes */
+  .editor{background:var(--editor-bg);border-color:var(--editor-rule)}
+  .editor .pane-head{
+    color:var(--editor-muted);
+    border-bottom:1px solid var(--editor-rule);
+  }
+  .editor .note{color:var(--editor-muted)}
+  .editor .mini{color:var(--editor-muted);border-color:var(--editor-rule)}
+  .editor .mini:hover{color:var(--editor-ink);background:rgba(255,255,255,.05)}
+  #src{
+    flex:1;min-height:0;width:100%;
+    display:block;
+    background:transparent;
+    color:var(--editor-ink);
+    caret-color:var(--editor-caret);
+    border:none;
+    resize:none;
+    padding:16px 18px 20px;
+    font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:13px;
+    line-height:1.72;
+    tab-size:2;
+  }
+  #src::selection{background:rgba(110,151,245,.32)}
+  #src:focus{outline:none;box-shadow:inset 2px 0 0 var(--accent)}
+  #src::placeholder{color:var(--editor-muted)}
+
+  /* preview: the document itself */
+  .preview{background:var(--ground-2);border-color:var(--rule)}
+  .preview .pane-head{color:var(--muted);border-bottom:1px solid var(--rule)}
+  .preview .note{color:var(--muted)}
+  .preview .mini{color:var(--ink-2);border-color:var(--rule)}
+  .preview .mini:hover{background:var(--panel)}
+  .canvas{
+    flex:1;min-height:0;
+    overflow:auto;
+    padding:22px 18px 40px;
+    display:flex;justify-content:center;
+  }
+  .sheet{
+    width:min(100%,552pt);
+    flex:none;
+    align-self:flex-start;
+    background:var(--sheet);
+    color:#000;
+    padding:34pt 40pt 40pt;
+    border-radius:2px;
+    box-shadow:var(--shadow-sheet);
+  }
+  .sheet > div{overflow-wrap:break-word}
+  .sheet table{max-width:100%}
+  .sheet .tscroll{max-width:100%;overflow-x:auto;overflow-y:hidden}
+  .sheet img{max-width:100%;height:auto}
+  .sheet .empty{
+    font-family:Archivo,sans-serif;
+    font-size:13px;color:#8A8A85;
+    margin:0;
+  }
+
+  /* ---------- legend ---------- */
+  .legend{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px 7px;
+    flex:none;
+  }
+  .legend b{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:9.5px;font-weight:500;text-transform:uppercase;letter-spacing:.12em;
+    color:var(--muted);margin-right:3px;
+  }
+  .legend span{
+    font-size:11.5px;color:var(--ink-2);
+    background:var(--panel);
+    border:1px solid var(--rule-soft);
+    border-radius:20px;
+    padding:3px 9px;
+    white-space:nowrap;
+  }
+
+  /* ---------- toast + manual fallback ---------- */
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translate(-50%,10px);
+    background:var(--ink);color:var(--ground);
+    font-size:13px;font-weight:500;
+    padding:9px 16px;border-radius:20px;
+    box-shadow:var(--shadow);
+    opacity:0;pointer-events:none;
+    transition:opacity .16s ease, transform .16s ease;
+    z-index:20;
+  }
+  .toast[data-show="1"]{opacity:1;transform:translate(-50%,0)}
+
+  .manual{
+    position:fixed;inset:0;z-index:30;
+    background:rgba(10,14,20,.55);
+    display:grid;place-items:center;
+    padding:20px;
+  }
+  .manual .box{
+    width:min(100%,560px);
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:var(--shadow);
+  }
+  .manual h3{margin:0 0 6px;font-size:16px;letter-spacing:-.01em}
+  .manual p{margin:0 0 12px;font-size:13px;color:var(--ink-2);line-height:1.5;max-width:62ch}
+  .manual textarea{
+    width:100%;height:180px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;line-height:1.5;
+    color:var(--ink);background:var(--ground-2);
+    border:1px solid var(--rule);border-radius:8px;padding:10px;resize:vertical;
+  }
+  .manual .row{display:flex;gap:8px;margin-top:12px;justify-content:flex-end}
+
+  /* ---------- error boundary ---------- */
+  .crash{
+    position:fixed;left:50%;top:14px;transform:translateX(-50%);
+    z-index:40;width:min(calc(100% - 32px),580px);
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--panel);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--warn);
+    border-radius:10px;
+    padding:12px 14px;
+    box-shadow:var(--shadow);
+  }
+  .crash strong{display:block;font-size:13px;margin-bottom:3px}
+  .crash p{margin:0;font-size:12.5px;line-height:1.5;color:var(--ink-2)}
+  .crash code{
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11.5px;overflow-wrap:break-word;color:var(--ink);
+  }
+  .crash .btn{margin-left:auto;flex:none;align-self:center}
+
+  /* The sheet is light paper in both themes, so these colours are fixed. */
+  .sheet .blowup{font-family:Archivo,"Helvetica Neue",Arial,sans-serif}
+  .sheet .blowup h3{margin:0 0 8px;font-size:15px;letter-spacing:-.01em;color:#8A2B22}
+  .sheet .blowup p{margin:0 0 12px;font-size:13px;line-height:1.55;max-width:60ch;color:#4A4A46}
+  .sheet .blowup pre{
+    margin:0 0 14px;padding:10px 12px;
+    background:#F6F2F0;border:1px solid #E3DBD7;border-radius:6px;
+    font-family:"IBM Plex Mono",ui-monospace,monospace;
+    font-size:11px;line-height:1.5;color:#5A4B47;
+    white-space:pre-wrap;overflow-wrap:break-word;
+    max-height:150px;overflow:auto;
+  }
+  .sheet .blowup .row{display:flex;gap:8px;flex-wrap:wrap}
+  .sheet .blowup .btn{background:#fff;border:1px solid #D7D1CD;color:#3A3A38}
+  .sheet .blowup .btn:hover{border-color:#A9A19C;color:#1A1A18}
+
+  @media (max-width:860px){
+    .panes{grid-template-columns:1fr;grid-template-rows:auto}
+    .app{height:auto;min-height:0}
+    .editor{min-height:46vh}
+    .preview{min-height:70vh}
+    .brand{margin-right:0;width:100%}
+    .controls{width:100%}
+    .controls .btn.primary{margin-left:auto}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important}
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true">md</span>
+      <div>
+        <h1>Cuckdoc</h1>
+        <p>Markdown in, Word-ready rich text on your clipboard</p>
+      </div>
+    </div>
+    <div class="controls">
+      <label class="ctl" for="font"><span>Body font</span>
+        <select id="font">
+          <option value="calibri">Calibri 11 pt</option>
+          <option value="aptos">Aptos 11 pt</option>
+          <option value="times">Times New Roman 12 pt</option>
+          <option value="arial">Arial 11 pt</option>
+          <option value="georgia">Georgia 11 pt</option>
+        </select>
+      </label>
+      <label class="ctl" for="scheme"><span>Headings</span>
+        <select id="scheme">
+          <option value="office">Office blue</option>
+          <option value="mono">Black &amp; white</option>
+        </select>
+      </label>
+      <label class="ctl" for="code"><span>Code boxes</span>
+        <select id="code">
+          <option value="plain">Multiline only</option>
+          <option value="box">All code</option>
+        </select>
+      </label>
+      <button class="btn primary" id="copy" type="button">Copy for Word <kbd id="kbd">⌘⏎</kbd></button>
+    </div>
+  </header>
+
+  <main class="panes">
+    <section class="pane editor">
+      <div class="pane-head">
+        <h2>Markdown</h2>
+        <div class="meta">
+          <span class="note" id="stats">0 words</span>
+          <button class="mini" id="sample" type="button">Sample</button>
+          <button class="mini" id="clear" type="button">Clear</button>
+        </div>
+      </div>
+      <textarea id="src" spellcheck="false" aria-label="Markdown source" placeholder="# Paste your markdown here"></textarea>
+    </section>
+
+    <section class="pane preview">
+      <div class="pane-head">
+        <h2>Word preview</h2>
+        <div class="meta">
+          <span class="note" id="fontnote">Calibri 11 pt</span>
+          <button class="mini" id="copyhtml" type="button">Copy HTML</button>
+        </div>
+      </div>
+      <div class="canvas">
+        <article class="sheet" id="out"></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="legend">
+    <b>Converts</b>
+    <span>Headings</span>
+    <span>Bold &amp; italic</span>
+    <span>Nested lists</span>
+    <span>Task lists → ☒ ☐</span>
+    <span>Tables</span>
+    <span>Fenced code</span>
+    <span>Block quotes</span>
+    <span>Links</span>
+    <span>Rules</span>
+    <span>Strikethrough</span>
+  </footer>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<div class="crash" id="crash" hidden role="alert">
+  <div>
+    <strong id="crash-title">Something went wrong</strong>
+    <p>Your markdown is safe — it is still in the editor and saved in this browser. <code id="crash-detail"></code></p>
+  </div>
+  <button class="btn" id="crash-close" type="button">Dismiss</button>
+</div>
+
+<div class="manual" id="manual" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-labelledby="manual-title">
+    <h3 id="manual-title">Your browser blocked the clipboard</h3>
+    <p>Copy the HTML below, save it as a <code>.html</code> file and open it in Word — or paste it into any editor that accepts HTML. Everything else on this page keeps working.</p>
+    <textarea id="manual-text" spellcheck="false" aria-label="Generated HTML"></textarea>
+    <div class="row">
+      <button class="btn" id="manual-select" type="button">Select all</button>
+      <button class="btn" id="manual-close" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<script type="text/markdown" id="sample-md">
+# Quarterly Update — Platform Team
+
+**Prepared by:** Ops working group · **Period:** Q3 2026
+
+Markdown goes in the left pane. Press **Copy for Word**, then paste straight into
+Word, Outlook or Google Docs — the formatting travels with it.
+
+## Highlights
+
+- Shipped the new ingest pipeline; p95 latency down to **180 ms**
+- Migrated 14 services off the legacy queue
+- Onboarded 3 engineers — see [the handbook](https://example.com/handbook)
+
+### Open items
+
+1. Finalise the retention policy
+2. Replace the nightly export job
+   1. Draft the target schema
+   2. Backfill 2024–2025
+3. Close out the audit findings
+
+## Status
+
+| Workstream | Owner | Status | Due |
+| --- | --- | --- | --- |
+| Ingest v2 | Priya | Shipped | 12 Aug |
+| Retention policy | Marco | In review | 30 Sep |
+| Legacy queue | Platform | At risk | 15 Oct |
+
+## Pre-launch checklist
+
+- [x] Load test at 3× peak
+- [x] Runbook published
+- [ ] Failover drill scheduled
+
+> Anything not covered here rolls into the October review.
+
+Config for the new worker:
+
+```yaml
+worker:
+  concurrency: 8
+  retry: exponential
+  queue: ingest-v2
+```
+
+Inline `code`, ~~struck text~~ and *emphasis* all survive the trip.
+
+---
+
+*Replace this sample with your own markdown.*
+</script>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var src = $('src'), out = $('out'), stats = $('stats'), fontNote = $('fontnote');
+  var fontSel = $('font'), schemeSel = $('scheme'), codeSel = $('code');
+  var STORE = 'cuckdoc/v1';
+
+  /* ---------- Word output vocabulary ---------- */
+
+  var FONTS = {
+    calibri: { css:"Calibri, Carlito, 'Segoe UI', sans-serif", size:'11pt', label:'Calibri 11 pt' },
+    aptos:   { css:"Aptos, 'Aptos Display', 'Segoe UI', Carlito, Calibri, sans-serif", size:'11pt', label:'Aptos 11 pt' },
+    times:   { css:"'Times New Roman', Tinos, Times, serif", size:'12pt', label:'Times New Roman 12 pt' },
+    arial:   { css:"Arial, Helvetica, sans-serif", size:'11pt', label:'Arial 11 pt' },
+    georgia: { css:"Georgia, 'Times New Roman', serif", size:'11pt', label:'Georgia 11 pt' }
+  };
+
+  var SCHEMES = {
+    office: {
+      h1:'#2F5496', h2:'#2F5496', h3:'#1F3864', h4:'#2F5496', h6:'#595959',
+      link:'#0563C1',
+      thBg:'#D9E2F3', tBorder:'#8EAADB',
+      quoteBar:'#8EAADB', quoteInk:'#44546A',
+      codeBg:'#F2F5F9', codeBorder:'#C9D4E3'
+    },
+    mono: {
+      h1:'#000000', h2:'#000000', h3:'#000000', h4:'#000000', h6:'#595959',
+      link:'#0563C1',
+      thBg:'#E6E6E6', tBorder:'#8C8C8C',
+      quoteBar:'#A6A6A6', quoteInk:'#404040',
+      codeBg:'#F4F4F4', codeBorder:'#CFCFCF'
+    }
+  };
+
+  /* ---------- markdown -> html ---------- */
+
+  function escapeHtml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function toHtml(md){
+    if (window.marked){
+      var opts = { gfm:true, breaks:false, headerIds:false, mangle:false };
+      try {
+        return typeof window.marked.parse === 'function'
+          ? window.marked.parse(md, opts)
+          : window.marked(md, opts);
+      } catch(e){ /* fall through to the built-in parser */ }
+    }
+    return miniMarkdown(md);
+  }
+
+  /* Built-in parser — used only if the markdown library fails to load. */
+  function miniMarkdown(input){
+    var codeBlocks = [], spans = [];
+    var text = String(input).replace(/\r\n?/g,'\n');
+
+    text = text.replace(/^(?:```|~~~)[^\n]*\n([\s\S]*?)^(?:```|~~~)[ \t]*$/gm, function(_, body){
+      codeBlocks.push(body.replace(/\n$/,''));
+      return '@@B' + (codeBlocks.length - 1) + '@@';
+    });
+
+    function inline(t){
+      t = escapeHtml(t);
+      t = t.replace(/`([^`]+)`/g, function(_, c){ spans.push(c); return '@@S' + (spans.length - 1) + '@@'; });
+      t = t.replace(/!\[([^\]]*)\]\(([^)\s]+)[^)]*\)/g, function(_, a, u){ return '<img src="' + u + '" alt="' + a + '">'; });
+      t = t.replace(/\[([^\]]+)\]\(([^)\s]+)[^)]*\)/g, function(_, a, u){ return '<a href="' + u + '">' + a + '</a>'; });
+      t = t.replace(/(\*\*|__)(?=\S)([\s\S]*?\S)\1/g, '<strong>$2</strong>');
+      t = t.replace(/(?:^|(?<=[\s(]))([*_])(?=\S)([\s\S]*?\S)\1/g, '<em>$2</em>');
+      t = t.replace(/~~(?=\S)([\s\S]*?\S)~~/g, '<del>$1</del>');
+      t = t.replace(/ {2,}$/gm, '<br>');
+      return t;
+    }
+
+    var lines = text.split('\n'), html = [], i = 0;
+
+    function listItemMarker(line){
+      var m = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/.exec(line);
+      if (!m) return null;
+      return { indent: m[1].replace(/\t/g,'  ').length, ordered: /\d/.test(m[2]), body: m[3] };
+    }
+
+    function parseList(depth){
+      var first = listItemMarker(lines[i]);
+      var tag = first.ordered ? 'ol' : 'ul';
+      var buf = '<' + tag + '>';
+      while (i < lines.length){
+        var item = listItemMarker(lines[i]);
+        if (!item || item.indent < depth) break;
+        if (item.indent > depth){ buf += parseList(item.indent); continue; }
+        if (item.ordered !== first.ordered) break;
+        i++;
+        var body = item.body, task = /^\[([ xX])\]\s+/.exec(body);
+        var attr = '';
+        if (task){ body = body.slice(task[0].length); attr = ' data-task="' + (task[1] === ' ' ? '0' : '1') + '"'; }
+        buf += '<li' + attr + '>' + inline(body);
+        var nested = i < lines.length ? listItemMarker(lines[i]) : null;
+        if (nested && nested.indent > depth) buf += parseList(nested.indent);
+        buf += '</li>';
+      }
+      return buf + '</' + tag + '>';
+    }
+
+    while (i < lines.length){
+      var line = lines[i];
+
+      if (!line.trim()){ i++; continue; }
+
+      var ph = /^@@B(\d+)@@$/.exec(line.trim());
+      if (ph){ html.push('<pre><code>' + escapeHtml(codeBlocks[+ph[1]]) + '</code></pre>'); i++; continue; }
+
+      var h = /^(#{1,6})\s+(.*)$/.exec(line);
+      if (h){ html.push('<h' + h[1].length + '>' + inline(h[2].replace(/\s+#+\s*$/,'')) + '</h' + h[1].length + '>'); i++; continue; }
+
+      if (/^\s*([-*_])(?:\s*\1){2,}\s*$/.test(line)){ html.push('<hr>'); i++; continue; }
+
+      if (/^\s*>/.test(line)){
+        var quote = [];
+        while (i < lines.length && /^\s*>/.test(lines[i])){ quote.push(lines[i].replace(/^\s*>\s?/,'')); i++; }
+        html.push('<blockquote><p>' + inline(quote.join('\n')) + '</p></blockquote>');
+        continue;
+      }
+
+      if (/^\s*\|/.test(line) && i + 1 < lines.length && /^\s*\|?[\s:|-]*-[\s:|-]*\|?\s*$/.test(lines[i+1])){
+        var cells = function(row){
+          return row.trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(function(c){ return inline(c.trim()); });
+        };
+        var head = cells(lines[i]); i += 2;
+        var table = '<table><thead><tr>' + head.map(function(c){ return '<th>' + c + '</th>'; }).join('') + '</tr></thead><tbody>';
+        while (i < lines.length && /^\s*\|/.test(lines[i])){
+          table += '<tr>' + cells(lines[i]).map(function(c){ return '<td>' + c + '</td>'; }).join('') + '</tr>';
+          i++;
+        }
+        html.push(table + '</tbody></table>');
+        continue;
+      }
+
+      if (listItemMarker(line)){ html.push(parseList(listItemMarker(line).indent)); continue; }
+
+      var para = [];
+      while (i < lines.length && lines[i].trim() && !/^\s*[>|#]/.test(lines[i]) && !listItemMarker(lines[i]) && !/^@@B\d+@@$/.test(lines[i].trim())){
+        para.push(lines[i]); i++;
+      }
+      html.push('<p>' + inline(para.join('\n')) + '</p>');
+    }
+
+    return html.join('\n').replace(/@@S(\d+)@@/g, function(_, n){ return '<code>' + escapeHtml(spans[+n]) + '</code>'; });
+  }
+
+  /* ---------- html -> Word-styled html ---------- */
+
+  function safeUrl(u){
+    return /^\s*(javascript|data|vbscript):/i.test(u || '') ? '#' : u;
+  }
+
+  function styleDocument(html, font, scheme, codeStyle){
+    var f = FONTS[font] || FONTS.calibri;
+    var s = SCHEMES[scheme] || SCHEMES.office;
+    var root = document.createElement('div');
+    root.innerHTML = html;
+
+    // Strip anything that should never travel to a document.
+    root.querySelectorAll('script,style,iframe,object,embed,form,input:not([type="checkbox"])').forEach(function(n){ n.remove(); });
+
+    // Each source line becomes its own paragraph rather than one <pre>: Word maps
+    // <pre> to "HTML Preformatted", which never wraps, so long lines run off the
+    // page. Leading indentation becomes non-breaking spaces, which Word won't
+    // collapse the way it collapses ordinary leading whitespace.
+    var boxAll = codeStyle === 'box';
+
+    function codeLine(line, inBox){
+      var div = document.createElement('div');
+      div.dataset.done = '1';
+      div.setAttribute('style',
+        "margin:0;font-family:Consolas,'Courier New',monospace;font-size:" + (inBox ? '9.5pt' : '10pt') +
+        ";line-height:1.35;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word;color:#1F2328;");
+      var indent = /^[ \t]*/.exec(line)[0];
+      var rest = line.slice(indent.length);
+      if (indent) div.appendChild(document.createTextNode(indent.replace(/\t/g,'    ').replace(/ /g,' ')));
+      if (rest) div.appendChild(document.createTextNode(rest));
+      if (!indent && !rest) div.appendChild(document.createTextNode(' '));
+      return div;
+    }
+
+    root.querySelectorAll('pre').forEach(function(pre){
+      var lines = pre.textContent.replace(/\n+$/,'').split('\n');
+      // A multi-line block always keeps its box — that's what separates it from
+      // the prose around it. Only one-liners fall back to bare monospace.
+      var inBox = boxAll || lines.length > 1;
+      var host, replacement;
+
+      if (inBox){
+        // A single-cell table is the one construction Word reliably renders with
+        // both a background fill and a border.
+        var table = document.createElement('table');
+        var tbody = document.createElement('tbody'), tr = document.createElement('tr');
+        host = document.createElement('td');
+        table.dataset.done = tbody.dataset.done = tr.dataset.done = host.dataset.done = '1';
+        table.setAttribute('style','border-collapse:collapse;width:100%;table-layout:fixed;margin:0 0 10pt;');
+        host.setAttribute('style','background-color:' + s.codeBg + ';border:0.75pt solid ' + s.codeBorder +
+                                  ';padding:8pt 10pt;overflow-wrap:break-word;word-break:break-word;');
+        tr.appendChild(host); tbody.appendChild(tr); table.appendChild(tbody);
+        replacement = table;
+      } else {
+        host = replacement = document.createElement('div');
+        host.dataset.done = '1';
+        host.setAttribute('style','margin:0 0 10pt;');
+      }
+
+      lines.forEach(function(line){ host.appendChild(codeLine(line, inBox)); });
+      pre.replaceWith(replacement);
+    });
+
+    // Word has no checkbox control — spell the state out in the text.
+    root.querySelectorAll('li').forEach(function(li){
+      var box = li.querySelector('input[type="checkbox"]');
+      var state = li.dataset.task;
+      if (!box && state === undefined) return;
+      var checked = box ? box.checked || box.hasAttribute('checked') : state === '1';
+      if (box) box.remove();
+      li.insertBefore(document.createTextNode(checked ? '☒ ' : '☐ '), li.firstChild);
+      li.dataset.task = checked ? '1' : '0';
+    });
+
+    var headingSize = { H1:'16pt', H2:'13pt', H3:'12pt', H4:'11pt', H5:'11pt', H6:'10.5pt' };
+    var headingInk  = { H1:s.h1, H2:s.h2, H3:s.h3, H4:s.h4, H5:s.h3, H6:s.h6 };
+    var headingTop  = { H1:'16pt', H2:'13pt', H3:'11pt', H4:'10pt', H5:'10pt', H6:'10pt' };
+
+    root.querySelectorAll('*').forEach(function(el){
+      if (el.dataset.done) return;
+      var tag = el.tagName, style = '';
+
+      if (headingSize[tag]){
+        style = 'font-size:' + headingSize[tag] + ';font-weight:' + (tag === 'H4' || tag === 'H5' ? '600' : '700') +
+                ';color:' + headingInk[tag] + ';margin:' + headingTop[tag] + ' 0 6pt;line-height:1.2;' +
+                (tag === 'H4' ? 'font-style:italic;' : '') +
+                (tag === 'H6' ? 'text-transform:uppercase;letter-spacing:0.4pt;' : '');
+        if (!el.previousElementSibling) style = style.replace(/margin:[^;]+;/, 'margin:0 0 6pt;');
+      }
+      else if (tag === 'P'){ style = 'margin:0 0 8pt;line-height:1.15;'; }
+      else if (tag === 'UL' || tag === 'OL'){
+        var nested = el.parentElement && (el.parentElement.tagName === 'LI');
+        style = 'margin:' + (nested ? '4pt 0 0' : '0 0 8pt') + ';padding-left:26pt;';
+        if (el.querySelector(':scope > li[data-task]')) style += 'list-style:none;padding-left:8pt;';
+      }
+      else if (tag === 'LI'){ style = 'margin:0 0 4pt;line-height:1.15;'; }
+      else if (tag === 'BLOCKQUOTE'){
+        style = 'margin:0 0 9pt;padding:3pt 0 3pt 12pt;border-left:3pt solid ' + s.quoteBar + ';color:' + s.quoteInk + ';';
+      }
+      else if (tag === 'TABLE'){ style = 'border-collapse:collapse;width:100%;margin:0 0 10pt;'; }
+      else if (tag === 'TH' || tag === 'TD'){
+        // Breakable cell text keeps a wide table inside the page: it lowers each
+        // column's minimum width, so width:100% can actually be honoured.
+        style = 'border:0.75pt solid ' + s.tBorder + ';padding:4pt 7pt;vertical-align:top;' +
+                'overflow-wrap:break-word;word-break:break-word;' +
+                (tag === 'TH' ? 'background-color:' + s.thBg + ';text-align:left;font-weight:700;' : '');
+      }
+      else if (tag === 'CODE'){
+        style = "font-family:Consolas,'Courier New',monospace;font-size:10pt;color:#24292F;" +
+                "overflow-wrap:break-word;word-break:break-word;" +
+                (boxAll ? "background-color:#F1F1EF;border:0.5pt solid #DCDCDC;padding:0 2pt;" : "");
+      }
+      else if (tag === 'A'){
+        el.setAttribute('href', safeUrl(el.getAttribute('href')));
+        style = 'color:' + s.link + ';text-decoration:underline;';
+      }
+      else if (tag === 'HR'){ style = 'border:none;border-top:0.75pt solid #BFBFBF;height:0;margin:12pt 0;'; }
+      else if (tag === 'IMG'){
+        el.setAttribute('src', safeUrl(el.getAttribute('src')));
+        style = 'max-width:100%;height:auto;';
+      }
+      else if (tag === 'DEL' || tag === 'S'){ style = 'text-decoration:line-through;color:#767676;'; }
+      else if (tag === 'STRONG' || tag === 'B'){ style = 'font-weight:700;'; }
+      else if (tag === 'EM' || tag === 'I'){ style = 'font-style:italic;'; }
+
+      Array.prototype.slice.call(el.attributes).forEach(function(a){
+        if (/^on/i.test(a.name)) el.removeAttribute(a.name);
+      });
+      if (style) el.setAttribute('style', style);
+    });
+
+    // Bookkeeping attributes are for this pass only — keep them out of the paste.
+    root.querySelectorAll('[data-done],[data-task]').forEach(function(n){
+      n.removeAttribute('data-done');
+      n.removeAttribute('data-task');
+    });
+
+    var body = '<div style="font-family:' + f.css + ';font-size:' + f.size + ';color:#000000;line-height:1.15;">' + root.innerHTML + '</div>';
+    return { body: body, plain: root.innerText || root.textContent || '' };
+  }
+
+  function fullDocument(body){
+    return '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>' + body + '</body></html>';
+  }
+
+  /* ---------- render ---------- */
+
+  var current = { body:'', plain:'' };
+
+  function renderNow(){
+    var md = src.value;
+    var font = fontSel.value, scheme = schemeSel.value, codeStyle = codeSel.value;
+    fontNote.textContent = FONTS[font].label;
+
+    if (!md.trim()){
+      current = { body:'', plain:'' };
+      out.innerHTML = '<p class="empty">Nothing to convert yet — type or paste markdown on the left.</p>';
+      stats.textContent = '0 words';
+      return;
+    }
+
+    current = styleDocument(toHtml(md), font, scheme, codeStyle);
+    out.innerHTML = current.body;
+
+    // Preview only: a table too wide even for broken words gets its own
+    // scrollbar rather than pushing past the sheet. The copied HTML is untouched.
+    out.querySelectorAll('table').forEach(function(table){
+      var wrap = document.createElement('div');
+      wrap.className = 'tscroll';
+      table.replaceWith(wrap);
+      wrap.appendChild(table);
+    });
+
+    var words = md.trim().match(/\S+/g);
+    stats.textContent = (words ? words.length : 0).toLocaleString() + ' words · ' + md.length.toLocaleString() + ' chars';
+  }
+
+  /* ---------- error boundary ---------- */
+
+  function describe(err){
+    if (!err) return 'Unknown error';
+    var text = (err.name ? err.name + ': ' : '') + (err.message || String(err));
+    if (err.stack) text += '\n\n' + String(err.stack).split('\n').slice(0, 6).join('\n');
+    return text;
+  }
+
+  function showCrash(title, err){
+    $('crash-title').textContent = title;
+    $('crash-detail').textContent = describe(err).split('\n')[0];
+    $('crash').hidden = false;
+  }
+
+  // A thrown parser or DOM error must never leave a blank preview with no
+  // explanation, and must never cost the user the markdown they typed.
+  function render(){
+    try {
+      renderNow();
+    } catch(err){
+      current = { body:'', plain:'' };
+      stats.textContent = 'preview failed';
+
+      var box = document.createElement('div');
+      box.className = 'blowup';
+      box.innerHTML =
+        '<h3>This markdown broke the converter</h3>' +
+        '<p>Your text is safe — it is still in the editor and saved in this browser. ' +
+        'Whatever you typed last is the most likely cause: undo it, or load the sample to start from something clean. ' +
+        'Everything else on the page still works.</p>' +
+        '<pre></pre>' +
+        '<div class="row">' +
+          '<button class="btn" type="button" data-act="retry">Try again</button>' +
+          '<button class="btn" type="button" data-act="detail">Copy error details</button>' +
+        '</div>';
+      box.querySelector('pre').textContent = describe(err);
+      box.addEventListener('click', function(e){
+        var act = e.target.getAttribute && e.target.getAttribute('data-act');
+        if (act === 'retry') render();
+        if (act === 'detail') copyPlainText(describe(err), 'Error details copied');
+      });
+
+      out.innerHTML = '';
+      out.appendChild(box);
+      if (window.console && console.error) console.error('[cuckdoc] render failed', err);
+    }
+  }
+
+  var timer;
+  function scheduleRender(){ clearTimeout(timer); timer = setTimeout(function(){ render(); save(); }, 130); }
+
+  /* ---------- clipboard ---------- */
+
+  function legacyCopy(body){
+    var ghost = document.createElement('div');
+    ghost.setAttribute('contenteditable','true');
+    ghost.style.cssText = 'position:fixed;left:-100000px;top:0;width:640px;white-space:normal;';
+    ghost.innerHTML = body;
+    document.body.appendChild(ghost);
+    var ok = false;
+    try {
+      var sel = window.getSelection(), range = document.createRange();
+      range.selectNodeContents(ghost);
+      sel.removeAllRanges();
+      sel.addRange(range);
+      ok = document.execCommand('copy');
+      sel.removeAllRanges();
+    } catch(e){ ok = false; }
+    ghost.remove();
+    return ok;
+  }
+
+  async function copyRich(){
+    if (!current.body){ toast('Nothing to copy yet'); return; }
+    var html = fullDocument(current.body), ok = false;
+
+    if (navigator.clipboard && window.ClipboardItem){
+      try {
+        await navigator.clipboard.write([ new ClipboardItem({
+          'text/html':  new Blob([html],          { type:'text/html'  }),
+          'text/plain': new Blob([current.plain], { type:'text/plain' })
+        }) ]);
+        ok = true;
+      } catch(e){ ok = false; }
+    }
+    if (!ok) ok = legacyCopy(current.body);
+
+    if (ok){
+      toast('Copied — paste into Word');
+      flash();
+    } else {
+      $('manual-text').value = html;
+      $('manual').hidden = false;
+      $('manual-text').focus();
+    }
+  }
+
+  async function copyPlainText(value, message){
+    var ok = false;
+    try { await navigator.clipboard.writeText(value); ok = true; } catch(e){ ok = false; }
+    if (!ok){
+      var ta = document.createElement('textarea');
+      ta.value = value;
+      ta.style.cssText = 'position:fixed;left:-100000px;top:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+      ta.remove();
+    }
+    toast(ok ? message : 'Your browser blocked the clipboard');
+  }
+
+  var toastTimer;
+  function toast(message){
+    var el = $('toast');
+    el.textContent = message;
+    el.dataset.show = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ el.dataset.show = '0'; }, 2200);
+  }
+
+  var flashTimer;
+  function flash(){
+    var btn = $('copy');
+    btn.dataset.state = 'done';
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(function(){ btn.removeAttribute('data-state'); }, 1400);
+  }
+
+  /* ---------- persistence ---------- */
+
+  function save(){
+    try {
+      localStorage.setItem(STORE, JSON.stringify({
+        md: src.value, font: fontSel.value, scheme: schemeSel.value, code: codeSel.value
+      }));
+    } catch(e){ /* private window, blocked storage — the tool still works */ }
+  }
+
+  function load(){
+    try {
+      var saved = JSON.parse(localStorage.getItem(STORE) || 'null');
+      if (saved && typeof saved.md === 'string'){
+        src.value = saved.md;
+        if (FONTS[saved.font]) fontSel.value = saved.font;
+        if (SCHEMES[saved.scheme]) schemeSel.value = saved.scheme;
+        if (saved.code === 'box' || saved.code === 'plain') codeSel.value = saved.code;
+        return true;
+      }
+    } catch(e){ /* ignore */ }
+    return false;
+  }
+
+  /* ---------- wiring ---------- */
+
+  var SAMPLE = ($('sample-md').textContent || '').replace(/^\n/,'');
+
+  if (!load()) src.value = SAMPLE;
+
+  src.addEventListener('input', scheduleRender);
+  [fontSel, schemeSel, codeSel].forEach(function(sel){
+    sel.addEventListener('change', function(){ render(); save(); });
+  });
+
+  $('copy').addEventListener('click', function(){
+    copyRich().catch(function(err){ showCrash('Copy failed', err); });
+  });
+  $('crash-close').addEventListener('click', function(){ $('crash').hidden = true; });
+
+  // Last line of defence: anything thrown outside render still gets explained.
+  window.addEventListener('error', function(e){ showCrash('Something went wrong', e.error || e); });
+  window.addEventListener('unhandledrejection', function(e){ showCrash('Something went wrong', e.reason); });
+  $('copyhtml').addEventListener('click', function(){
+    if (!current.body){ toast('Nothing to copy yet'); return; }
+    copyPlainText(fullDocument(current.body), 'HTML copied');
+  });
+  $('sample').addEventListener('click', function(){ src.value = SAMPLE; render(); save(); src.focus(); });
+  $('clear').addEventListener('click', function(){ src.value = ''; render(); save(); src.focus(); });
+
+  $('manual-close').addEventListener('click', function(){ $('manual').hidden = true; });
+  $('manual-select').addEventListener('click', function(){ $('manual-text').select(); });
+  $('manual').addEventListener('click', function(e){ if (e.target === $('manual')) $('manual').hidden = true; });
+
+  document.addEventListener('keydown', function(e){
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter'){ e.preventDefault(); copyRich(); }
+    if (e.key === 'Escape' && !$('manual').hidden) $('manual').hidden = true;
+  });
+
+  if (!/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) $('kbd').textContent = 'Ctrl ⏎';
+
+  render();
+})();
+</script>
